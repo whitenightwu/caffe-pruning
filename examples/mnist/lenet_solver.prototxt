@@ -8,6 +8,7 @@ test_iter: 100
 test_interval: 500
 # The base learning rate, momentum and the weight decay of the network.
 base_lr: 0.01
+#base_lr: 0.001
 momentum: 0.9
 weight_decay: 0.0005
 # The learning rate policy
@@ -17,9 +18,12 @@ power: 0.75
 # Display every 100 iterations
 display: 100
 # The maximum number of iterations
-max_iter: 10000
+#max_iter: 10000
+max_iter: 0
 # snapshot intermediate results
-snapshot: 5000
+#snapshot: 5000
+snapshot: 0
 snapshot_prefix: "examples/mnist/lenet"
 # solver mode: CPU or GPU
-solver_mode: GPU
+#solver_mode: GPU
+solver_mode: CPU

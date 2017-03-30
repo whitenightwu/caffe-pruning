@@ -2,7 +2,7 @@
 # Compute the mean image from the imagenet training lmdb
 # N.B. this is available in data/ilsvrc12
 
-EXAMPLE=examples/imagenet
+EXAMPLE=/mllib/imagenet/ilsvrc12/lmdb_resize
 DATA=data/ilsvrc12
 TOOLS=build/tools
 

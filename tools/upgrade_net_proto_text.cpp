@@ -8,12 +8,28 @@
 #include <string>
 
 #include "caffe/caffe.hpp"
+
+#include "caffe/prun_cfg.hpp"
+
 #include "caffe/util/io.hpp"
 #include "caffe/util/upgrade_proto.hpp"
 
 using std::ofstream;
 
 using namespace caffe;  // NOLINT(build/namespaces)
+
+// for pruning by zhluo
+DEFINE_bool(prun_conv, false, "Optional; pruning CONV layers");
+DEFINE_bool(prun_fc, false, "Optional; pruning FC layers");
+DEFINE_bool(prun_retrain, false, "Optional; retrain net after pruning");
+DEFINE_bool(sparse_csc, false, "Optional; blob use CSC sparse storage");
+DEFINE_int32(prun_fc_num, 0, "Optional; the number of FC layers");
+DEFINE_double(conv_ratio_0, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_1, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_2, 0, "Optional; conv layer prun ratio");
+DEFINE_double(fc_ratio_0, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_1, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_2, 0, "Optional; fc layer prun ratio");
 
 int main(int argc, char** argv) {
   FLAGS_alsologtostderr = 1;  // Print output to stderr (while still logging)

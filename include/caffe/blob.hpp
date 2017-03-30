@@ -230,7 +230,14 @@ class Blob {
   void Update();
   void FromProto(const BlobProto& proto, bool reshape = true);
   void ToProto(BlobProto* proto, bool write_diff = false) const;
-
+  // for pruning by zhluo
+  Dtype* cpu_data_prun() const;
+  void Update_Prun();
+  void CalWeightPrun(Dtype** weight, int count, bool prun = false, int num = 0) const;
+  void ToProtoPrun(BlobProto* proto, bool write_diff = false, bool prun = false, int num = 0);
+  void encode_weight(BlobProto* proto, Dtype** weight) const;
+  void decode_weight(Dtype** weight) const;
+  
   /// @brief Compute the sum of absolute values (L1 norm) of the data.
   Dtype asum_data() const;
   /// @brief Compute the sum of absolute values (L1 norm) of the diff.

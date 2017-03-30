@@ -10,7 +10,7 @@
 #include "caffe/layer_factory.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/math_functions.hpp"
-
+#include "caffe/prun_cfg.hpp"
 /**
  Forward declare boost::thread instead of including boost/thread.hpp
  to avoid a boost/NVCC issues (#1009, #1010) on OSX.
@@ -167,7 +167,8 @@ class Layer {
    * @brief Writes the layer parameter to a protocol buffer
    */
   virtual void ToProto(LayerParameter* param, bool write_diff = false);
-
+  // for pruning by zhluo
+  virtual void ToProtoPrun(LayerParameter* param, bool write_diff = false, int num = 0);
   /**
    * @brief Returns the scalar loss associated with a top blob at a given index.
    */
@@ -467,9 +468,39 @@ void Layer<Dtype>::ToProto(LayerParameter* param, bool write_diff) {
   param->Clear();
   param->CopyFrom(layer_param_);
   param->clear_blobs();
+  
   for (int i = 0; i < blobs_.size(); ++i) {
     blobs_[i]->ToProto(param->add_blobs(), write_diff);
   }
+}
+
+  // for pruning by zhluo
+template <typename Dtype>
+void Layer<Dtype>::ToProtoPrun(LayerParameter* param, bool write_diff, int num) {
+  param->Clear();
+  param->CopyFrom(layer_param_);
+  param->clear_blobs();
+  
+  if (FLAGS_prun_fc)
+    {
+      for (int i = 0; i < blobs_.size(); ++i)
+	{
+	  if ((i == 0) && !strcmp(param->type().c_str(), "InnerProduct")) // i = 0: weight; i = 1:bias
+	    blobs_[i]->ToProtoPrun(param->add_blobs(), write_diff, true, num);
+	  else
+	    blobs_[i]->ToProtoPrun(param->add_blobs(), write_diff, false, 0);
+	}
+    }
+  else if (FLAGS_prun_conv)
+    {
+      for (int i = 0; i < blobs_.size(); ++i)
+	{
+	  if ((i == 0) && !strcmp(param->type().c_str(), "Convolution"))
+	    blobs_[i]->ToProtoPrun(param->add_blobs(), write_diff, true, num);
+	  else
+	    blobs_[i]->ToProtoPrun(param->add_blobs(), write_diff, false, 0);
+	}
+    }
 }
 
 }  // namespace caffe

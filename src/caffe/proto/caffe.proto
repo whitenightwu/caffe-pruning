@@ -19,6 +19,11 @@ message BlobProto {
   optional int32 channels = 2 [default = 0];
   optional int32 height = 3 [default = 0];
   optional int32 width = 4 [default = 0];
+  
+  // CSC info, by zhluo
+  repeated int32 csc_ptr = 10 [packed = true];
+  repeated int32 csc_row_idx = 11 [packed = true];
+  repeated float csc_data = 12 [packed = true];
 }
 
 // The BlobProtoVector is simply a way to pass multiple blobproto instances

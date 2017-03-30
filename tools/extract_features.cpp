@@ -4,6 +4,8 @@
 #include "boost/algorithm/string.hpp"
 #include "google/protobuf/text_format.h"
 
+#include "caffe/prun_cfg.hpp"
+
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/net.hpp"
@@ -18,6 +20,19 @@ using caffe::Datum;
 using caffe::Net;
 using std::string;
 namespace db = caffe::db;
+
+// for pruning by zhluo
+DEFINE_bool(prun_conv, false, "Optional; pruning CONV layers");
+DEFINE_bool(prun_fc, false, "Optional; pruning FC layers");
+DEFINE_bool(prun_retrain, false, "Optional; retrain net after pruning");
+DEFINE_bool(sparse_csc, false, "Optional; blob use CSC sparse storage");
+DEFINE_int32(prun_fc_num, 0, "Optional; the number of FC layers");
+DEFINE_double(conv_ratio_0, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_1, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_2, 0, "Optional; conv layer prun ratio");
+DEFINE_double(fc_ratio_0, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_1, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_2, 0, "Optional; fc layer prun ratio");
 
 template<typename Dtype>
 int feature_extraction_pipeline(int argc, char** argv);

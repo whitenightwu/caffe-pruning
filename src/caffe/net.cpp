@@ -17,6 +17,8 @@
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/upgrade_proto.hpp"
 
+#include "caffe/prun_cfg.hpp"
+
 namespace caffe {
 
 template <typename Dtype>
@@ -841,9 +843,33 @@ void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
   param->set_name(name_);
   // Add bottom and top
   DLOG(INFO) << "Serializing " << layers_.size() << " layers";
+  
+  int fc_num = 0;
+  int conv_num = 0;
   for (int i = 0; i < layers_.size(); ++i) {
     LayerParameter* layer_param = param->add_layer();
-    layers_[i]->ToProto(layer_param, write_diff);
+    //layers_[i]->ToProto(layer_param, write_diff);
+ 
+    // modify for pruning, by zhluo
+    if (FLAGS_prun_fc)
+      layers_[i]->ToProtoPrun(layer_param, write_diff, fc_num);
+    else if (FLAGS_prun_conv)
+      layers_[i]->ToProtoPrun(layer_param, write_diff, conv_num);
+    else
+      layers_[i]->ToProto(layer_param, write_diff);
+      
+    if (FLAGS_prun_fc && !strcmp(layer_param->type().c_str(), "InnerProduct"))
+      fc_num++;
+    else if (FLAGS_prun_conv && !strcmp(layer_param->type().c_str(), "Convolution"))
+      conv_num++;
+    
+    LOG(INFO) << "> here layer type: " << layer_param->type().c_str();
+    
+    LOG(INFO) << " [Info] prun_conv: " << FLAGS_prun_conv;
+    LOG(INFO) << " [Info] prun_fc: " << FLAGS_prun_fc;
+    LOG(INFO) << " [Info] prun_fc_num: " << FLAGS_prun_fc_num;
+    LOG(INFO) << " [Info] prun_retrain: " << FLAGS_prun_retrain;
+    LOG(INFO) << " [Info] sparse_csc: " << FLAGS_sparse_csc;
   }
 }
 
@@ -906,9 +932,53 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
 
 template <typename Dtype>
 void Net<Dtype>::Update() {
-  for (int i = 0; i < learnable_params_.size(); ++i) {
-    learnable_params_[i]->Update();
-  }
+  
+  //for (int i = 0; i < learnable_params_.size(); ++i)
+  //  {
+  //    learnable_params_[i]->Update();
+  //  }
+  
+  // modify for pruning, by zhluo
+  if (FLAGS_prun_retrain)
+    {
+      int conv_fc_boundry = learnable_params_.size() - FLAGS_prun_fc_num * 2;
+      if (FLAGS_prun_fc)
+	{
+	  for (int i = 0; i < learnable_params_.size(); ++i)
+	    {
+	      if ((i >= conv_fc_boundry) &&  (i % 2 == 0))
+		learnable_params_[i]->Update_Prun();
+	    }
+	}
+      else if (FLAGS_prun_conv)
+	{
+	  for (int i = 0; i < learnable_params_.size(); ++i)
+	    {
+	      if ((i < conv_fc_boundry) && (i % 2 == 0))
+		learnable_params_[i]->Update_Prun();
+	    }
+	}
+      else
+	{
+	  LOG(FATAL) << " Error: please define prun_fc or prun_conv";
+	}
+    }
+  else
+    {
+      if ((FLAGS_prun_conv && !FLAGS_prun_fc) ||
+	  (!FLAGS_prun_conv && FLAGS_prun_fc) ||
+	  (!FLAGS_prun_conv && !FLAGS_prun_fc))
+	{
+	  for (int i = 0; i < learnable_params_.size(); ++i)
+	    {
+	      learnable_params_[i]->Update();
+	    }
+	}
+      else
+	{
+	  //LOG(INFO) << " Info: pruning CONV and FC layers";
+	}
+    }
 }
 
 template <typename Dtype>
