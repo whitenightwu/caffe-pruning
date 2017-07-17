@@ -25,10 +25,28 @@
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/format.hpp"
 
+
+
 #if defined(USE_LEVELDB) && defined(USE_LMDB)
 
 using namespace caffe;  // NOLINT(build/namespaces)
 using std::string;
+
+
+DEFINE_bool(prun_conv, false, "Optional; pruning CONV layers");
+DEFINE_bool(prun_fc, false, "Optional; pruning FC layers");
+DEFINE_bool(prun_retrain, false, "Optional; retrain net after pruning");
+DEFINE_int32(prun_fc_num, 0, "Optional; the number of FC layers");
+DEFINE_double(conv_ratio_0, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_1, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_2, 0, "Optional; conv layer prun ratio");
+DEFINE_double(fc_ratio_0, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_1, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_2, 0, "Optional; fc layer prun ratio");
+
+
+
+
 
 DEFINE_string(backend, "lmdb", "The backend for storing the result");
 

@@ -6,6 +6,9 @@
 #include "caffe/syncedmem.hpp"
 #include "caffe/util/math_functions.hpp"
 
+#include "caffe/prun_cfg.hpp"
+
+
 namespace caffe {
 
 template <typename Dtype>
@@ -532,6 +535,160 @@ void Blob<float>::ToProto(BlobProto* proto, bool write_diff) const {
     }
   }
 }
+
+
+
+
+
+template <typename Dtype>
+void Blob<Dtype>::CalWeightPrun(Dtype** weight, int count, bool prun, int num) const {
+  if (FLAGS_prun_fc)
+    {
+      int prun_cnt = 0;
+      Dtype* tmp_data = *weight;
+      Dtype thr_weight = 0;
+      vector<Dtype> sort_weight(count);
+      if (prun)
+	{
+	  for (int i = 0; i < count; ++i)
+	    sort_weight[i] = fabs(tmp_data[i]);
+
+	  sort(sort_weight.begin(), sort_weight.end());
+	  
+	  if (num == 0)
+	    {
+	      thr_weight = sort_weight[count * FLAGS_fc_ratio_0];
+	    }
+	  else if (num == 1)
+	    {
+	      thr_weight = sort_weight[count * FLAGS_fc_ratio_1];
+	    }
+	  else if (num == 2)
+	    {
+	      thr_weight = sort_weight[count * FLAGS_fc_ratio_2];
+	    }
+	  else
+	    {
+	      LOG(FATAL) << " Error: Illegal FC ratio ";
+	    }
+	  
+	  LOG(INFO) << "blob <FC>  threshold: " << thr_weight;
+	  for (int i = 0; i < count; ++i)
+	    {
+	      if ((tmp_data[i] > -thr_weight) && (tmp_data[i] < thr_weight))
+		{
+		  tmp_data[i] = 0;
+		  prun_cnt++;
+		}
+	    }
+
+	  LOG(INFO) << ">total num: " << count << ", prun count: " << prun_cnt;
+	}
+    }
+  else if (FLAGS_prun_conv)
+    {
+  
+      int prun_cnt = 0;
+      Dtype* tmp_data = *weight;
+      Dtype thr_weight = 0;
+      vector<Dtype> sort_weight(count);
+      if (prun)
+	{ 
+	  for (int i = 0; i < count; ++i)
+	    sort_weight[i] = fabs(tmp_data[i]);
+
+	  sort(sort_weight.begin(), sort_weight.end());
+	  
+	  if (num == 0)
+	    {
+	      thr_weight = sort_weight[count * FLAGS_conv_ratio_0];
+	    }
+	  else if (num == 1)
+	    {
+	      thr_weight = sort_weight[count * FLAGS_conv_ratio_1];
+	    }
+	  else if (num == 2)
+	    {
+	      thr_weight = sort_weight[count * FLAGS_conv_ratio_2];
+	    }
+	  else
+	    {
+	      LOG(FATAL) << " Error: Illegal FC ratio ";
+	    }
+	  
+	  LOG(INFO) << "blob <CONV>  threshold: " << thr_weight;
+	  for (int i = 0; i < count; ++i)
+	    {
+	      if ((tmp_data[i] > -thr_weight) && (tmp_data[i] < thr_weight))
+		{
+		  tmp_data[i] = 0;
+		  prun_cnt++;
+		}
+	    }
+	  LOG(INFO) << ">total num: " << count << ", prun count: " << prun_cnt;
+	}
+    }
+}
+
+
+
+template <>
+void Blob<float>::ToProtoPrun(BlobProto* proto, bool write_diff, bool prun, int num) {
+  proto->clear_shape();
+  for (int i = 0; i < shape_.size(); ++i) {
+    proto->mutable_shape()->add_dim(shape_[i]);
+  }
+  proto->clear_data();
+  proto->clear_diff();
+  float* data_vec = mutable_cpu_data();
+
+  CalWeightPrun(&data_vec, count_, prun, num);
+
+  
+      for (int i = 0; i < count_; ++i) {
+	proto->add_data(data_vec[i]);
+      }
+    
+  
+  if (write_diff) {
+    const float* diff_vec = cpu_diff();
+    for (int i = 0; i < count_; ++i) {
+      proto->add_diff(diff_vec[i]);
+    }
+  }
+}
+
+template <>
+void Blob<double>::ToProtoPrun(BlobProto* proto, bool write_diff, bool prun, int num) {
+  proto->clear_shape();
+  for (int i = 0; i < shape_.size(); ++i) {
+    proto->mutable_shape()->add_dim(shape_[i]);
+  }
+  proto->clear_double_data();
+  proto->clear_double_diff();
+
+  double* data_vec = mutable_cpu_data();
+    
+  CalWeightPrun(&data_vec, count_, prun, num);
+
+      for (int i = 0; i < count_; ++i) {
+	proto->add_double_data(data_vec[i]);
+      }
+
+  
+  if (write_diff) {
+    const double* diff_vec = cpu_diff();
+    for (int i = 0; i < count_; ++i) {
+      proto->add_double_diff(diff_vec[i]);
+    }
+  }
+}
+
+
+
+
+
+
 
 INSTANTIATE_CLASS(Blob);
 template class Blob<int>;

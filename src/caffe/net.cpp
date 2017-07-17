@@ -19,6 +19,21 @@
 
 #include "caffe/test/test_caffe_main.hpp"
 
+#include "caffe/prun_cfg.hpp"
+
+DEFINE_bool(prun_conv, false, "Optional; pruning CONV layers");
+DEFINE_bool(prun_fc, false, "Optional; pruning FC layers");
+
+DEFINE_int32(prun_fc_num, 0, "Optional; the number of FC layers");
+DEFINE_double(conv_ratio_0, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_1, 0, "Optional; conv layer prun ratio");
+DEFINE_double(conv_ratio_2, 0, "Optional; conv layer prun ratio");
+DEFINE_double(fc_ratio_0, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_1, 0, "Optional; fc layer prun ratio");
+DEFINE_double(fc_ratio_2, 0, "Optional; fc layer prun ratio");
+
+
+
 namespace caffe {
 
 template <typename Dtype>
@@ -910,9 +925,35 @@ void Net<Dtype>::ToProto(NetParameter* param, bool write_diff) const {
     param->add_input(blob_names_[net_input_blob_indices_[i]]);
   }
   DLOG(INFO) << "Serializing " << layers_.size() << " layers";
+
+  int fc_num = 0;
+  int conv_num = 0;
+
+
   for (int i = 0; i < layers_.size(); ++i) {
     LayerParameter* layer_param = param->add_layer();
-    layers_[i]->ToProto(layer_param, write_diff);
+
+
+    if (FLAGS_prun_fc)
+      layers_[i]->ToProtoPrun(layer_param, write_diff, fc_num);
+    else if (FLAGS_prun_conv)
+      layers_[i]->ToProtoPrun(layer_param, write_diff, conv_num);
+    else
+      layers_[i]->ToProto(layer_param, write_diff);
+      
+    if (FLAGS_prun_fc && !strcmp(layer_param->type().c_str(), "InnerProduct"))
+      fc_num++;
+    else if (FLAGS_prun_conv && !strcmp(layer_param->type().c_str(), "Convolution"))
+      conv_num++;
+    
+    LOG(INFO) << "> here layer type: " << layer_param->type().c_str();
+    
+    LOG(INFO) << " [Info] prun_conv: " << FLAGS_prun_conv;
+    LOG(INFO) << " [Info] prun_fc: " << FLAGS_prun_fc;
+
+
+
+
   }
 }
 
