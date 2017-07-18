@@ -36,7 +36,7 @@ def parse_args():
     """Parse input arguments."""
     parser = argparse.ArgumentParser(description='MNC demo')
     parser.add_argument('--gpu', dest='gpu_id', help='GPU device id to use [0]',
-                        default=0, type=int)
+                        default=1, type=int)
     parser.add_argument('--cpu', dest='cpu_mode',
                         help='Use CPU mode (overrides --gpu)',
                         action='store_true')

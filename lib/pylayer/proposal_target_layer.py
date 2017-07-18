@@ -134,7 +134,7 @@ def _sample_rois(all_rois, gt_boxes, rois_per_image, num_classes, gt_masks, im_s
         cur_inds = np.where((max_overlaps >= cfg.TRAIN.FG_THRESH_LO[i]) &
                             (max_overlaps <= cfg.TRAIN.FG_THRESH_HI[i]))[0]
         cur_rois_this_image = min(cur_inds.size, np.round(rois_per_image *
-                                                          cfg.TRAIN.FG_FRACTION[i]))
+                                                          cfg.TRAIN.FG_FRACTION[i]).astype(np.int))
         if cur_inds.size > 0:
             cur_inds = npr.choice(cur_inds, size=cur_rois_this_image, replace=False)
         fg_inds = np.hstack((fg_inds, cur_inds))
@@ -147,7 +147,7 @@ def _sample_rois(all_rois, gt_boxes, rois_per_image, num_classes, gt_masks, im_s
         cur_inds = np.where((max_overlaps >= cfg.TRAIN.BG_THRESH_LO[i]) &
                             (max_overlaps <= cfg.TRAIN.BG_THRESH_HI[i]))[0]
         cur_rois_this_image = min(cur_inds.size, np.round(bg_rois_per_this_image *
-                                                          cfg.TRAIN.BG_FRACTION[i]))
+                                                          cfg.TRAIN.BG_FRACTION[i]).astype(np.int))
         if cur_inds.size > 0:
             cur_inds = npr.choice(cur_inds, size=cur_rois_this_image, replace=False)
         bg_inds = np.hstack((bg_inds, cur_inds))
@@ -187,12 +187,13 @@ def _sample_rois(all_rois, gt_boxes, rois_per_image, num_classes, gt_masks, im_s
         top_mask_info[len(fg_inds):, :] = -1
 
         for i, val in enumerate(fg_inds):
+            val = int(val)
             gt_box = scaled_gt_boxes[gt_assignment[val]]
             gt_box = np.around(gt_box).astype(int)
             ex_box = np.around(scaled_rois[i]).astype(int)
             gt_mask = gt_masks[gt_assignment[val]]
             gt_mask_info = mask_info[gt_assignment[val]]
-            gt_mask = gt_mask[0:gt_mask_info[0], 0:gt_mask_info[1]]
+            gt_mask = gt_mask[0:int(gt_mask_info[0]), 0:int(gt_mask_info[1])]
             # calculate mask regression targets
             # (intersection of bounding box and gt mask)
             ex_mask = intersect_mask(ex_box, gt_box, gt_mask)

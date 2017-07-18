@@ -220,7 +220,7 @@ class StageBridgeLayer(caffe.Layer):
             gt_box = np.around(gt_box).astype(int)
             ex_box = np.around(scaled_rois[i]).astype(int)
             gt_mask = gt_masks[gt_assignment[val]]
-            gt_mask_info = mask_info[gt_assignment[val]]
+            gt_mask_info = mask_info[gt_assignment[val]].astype(np.int)
             gt_mask = gt_mask[0:gt_mask_info[0], 0:gt_mask_info[1]]
             # regression targets is the intersection of bounding box and gt mask
             ex_mask = intersect_mask(ex_box, gt_box, gt_mask)

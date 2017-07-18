@@ -71,7 +71,7 @@ class MaskLayer(caffe.Layer):
                 top_label[i][0] = 0
                 continue
             else:
-                info = gt_masks_info[i]
+                info = gt_masks_info[i].astype(np.int)
                 gt_mask = gt_masks[info[0]][0:info[1], 0:info[2]]
                 ex_mask = mask_pred[i].reshape((mask_size, mask_size))
                 ex_box = np.round(info[4:8]).astype(int)
