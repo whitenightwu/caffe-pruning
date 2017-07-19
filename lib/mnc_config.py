@@ -14,7 +14,7 @@ __C.CFM_MODE = False
 
 __C.EXP_DIR = 'default'
 __C.USE_GPU_NMS = True
-__C.GPU_ID = 0
+__C.GPU_ID = 1
 __C.RNG_SEED = 3
 __C.EPS = 1e-14
 __C.PIXEL_MEANS = np.array([[[102.9801, 115.9465, 122.7717]]])
@@ -33,7 +33,7 @@ __C.TRAIN = edict()
 # ------- General setting ----
 __C.TRAIN.IMS_PER_BATCH = 1
 # Batch size for training Region CNN (not RPN)
-__C.TRAIN.BATCH_SIZE = 64
+__C.TRAIN.BATCH_SIZE = 2
 # Make minibatches from images that have similar aspect ratios (i.e. both
 # tall and thin or both short and wide) in order to avoid wasting computation
 # on zero-padding.
@@ -43,7 +43,7 @@ __C.TRAIN.USE_FLIPPED = True
 # Resize shortest side to 600
 __C.TRAIN.SCALES = (600,)
 __C.TRAIN.MAX_SIZE = 1000
-__C.TRAIN.SNAPSHOT_ITERS = 5000
+__C.TRAIN.SNAPSHOT_ITERS = 10
 __C.TRAIN.SNAPSHOT_INFIX = ''
 # Sample FG
 __C.TRAIN.FG_FRACTION = [0.3]

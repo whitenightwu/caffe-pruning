@@ -19,7 +19,7 @@ from db.roidb import attach_roidb
 from db.maskdb import attach_maskdb
 from caffeWrapper.SolverWrapper import SolverWrapper
 import caffe
-
+import google.protobuf.text_format
 
 def parse_args():
     """ Parse input arguments
@@ -27,13 +27,13 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a Fast R-CNN network')
     parser.add_argument('--gpu', dest='gpu_id',
                         help='GPU device id to use [0]',
-                        default=0, type=int)
+                        default=1, type=int)
     parser.add_argument('--solver', dest='solver',
                         help='solver prototxt',
                         default=None, type=str)
     parser.add_argument('--iters', dest='max_iters',
                         help='number of iterations to train',
-                        default=40000, type=int)
+                        default=1, type=int)
     parser.add_argument('--weights', dest='pretrained_model',
                         help='initialize with pretrained model weights',
                         default=None, type=str)

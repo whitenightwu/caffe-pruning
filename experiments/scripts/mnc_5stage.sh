@@ -13,7 +13,9 @@ export PYTHONUNBUFFERED="True"
 GPU_ID=$1
 NET=$2
 NET_lc=${NET,,}
-ITERS=25000
+#ITERS=25000
+ITERS=0
+
 DATASET_TRAIN=voc_2012_seg_train
 DATASET_TEST=voc_2012_seg_val
 array=( $@ )
@@ -25,7 +27,10 @@ LOG="experiments/logs/mnc_5stage_${NET}_${EXTRA_ARGS_SLUG}.txt.`date +'%Y-%m-%d_
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
-NET_INIT=data/imagenet_models/${NET}.mask.caffemodel
+#NET_INIT=data/imagenet_models/${NET}.mask.caffemodel
+
+NET_INIT=data/mnc_model/mnc_model.caffemodel.h5
+
 time ./tools/train_net.py --gpu ${GPU_ID} \
   --solver models/${NET}/mnc_5stage/solver.prototxt \
   --weights ${NET_INIT} \
@@ -33,7 +38,7 @@ time ./tools/train_net.py --gpu ${GPU_ID} \
   --iters ${ITERS} \
   --cfg experiments/cfgs/${NET}/mnc_5stage.yml \
   ${EXTRA_ARGS}
-  
+ 
 set +x
 NET_FINAL=`grep -B 1 "done solving" ${LOG} | grep "Wrote snapshot" | awk '{print $4}'`
 set -x
