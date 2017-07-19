@@ -21,10 +21,10 @@
 
 #include "caffe/prun_cfg.hpp"
 
-DEFINE_bool(prun_conv, false, "Optional; pruning CONV layers");
+DEFINE_bool(prun_conv, true, "Optional; pruning CONV layers");
 DEFINE_bool(prun_fc, false, "Optional; pruning FC layers");
 
-DEFINE_int32(prun_fc_num, 0, "Optional; the number of FC layers");
+DEFINE_int32(prun_fc_num, 0.99, "Optional; the number of FC layers");
 DEFINE_double(conv_ratio_0, 0, "Optional; conv layer prun ratio");
 DEFINE_double(conv_ratio_1, 0, "Optional; conv layer prun ratio");
 DEFINE_double(conv_ratio_2, 0, "Optional; conv layer prun ratio");
@@ -972,6 +972,10 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
         H5P_DEFAULT);
     CHECK_GE(diff_hid, 0) << "Error saving weights to " << filename << ".";
   }
+
+
+  int num = 0;
+
   for (int layer_id = 0; layer_id < layers_.size(); ++layer_id) {
     const LayerParameter& layer_param = layers_[layer_id]->layer_param();
     string layer_name = layer_param.name();
@@ -986,7 +990,118 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
       CHECK_GE(layer_diff_hid, 0)
           << "Error saving weights to " << filename << ".";
     }
+
+
+
+
+
+    //===========================================
+    //pruning
+
+
     int num_params = layers_[layer_id]->blobs().size();
+
+
+  
+      int prun_cnt = 0;
+
+      Dtype thr_weight = 0;
+
+
+      if( ( num_params == 2 ) && FLAGS_prun_conv && ( num < 13 ) )
+      {
+	//	Blob<Dtype>* blob = layers_[layer_id]->blobs()[0];
+	
+        int count_params = layers_[layer_id]->blobs()[0]->count();
+	vector<Dtype> sort_weight(count_params);
+	
+	for (int i = 0; i < count_params; ++i)
+	  sort_weight[i] = fabs( layers_[layer_id]->blobs()[0]->mutable_cpu_data()[i] );
+	
+	  sort(sort_weight.begin(), sort_weight.end());
+	 
+	   if (num == 0)
+	    {
+	      thr_weight = sort_weight[count_params * 0.42];
+	    }
+	  else if (num == 1)
+	    {
+	      thr_weight = sort_weight[count_params * 0.78];
+	    }
+	  else if (num == 2)
+	    {
+	      thr_weight = sort_weight[count_params * 0.66];
+	    }
+	  else if (num == 3)
+	    {
+	      thr_weight = sort_weight[count_params * 0.64];
+	    }
+	  else if (num == 4)
+	    {
+	      thr_weight = sort_weight[count_params * 0.47];
+	    }
+	  else if (num == 5)
+	    {
+	      thr_weight = sort_weight[count_params * 0.76];
+	    }
+	  else if (num == 6)
+	    {
+	      thr_weight = sort_weight[count_params * 0.58];
+	    }
+	  else if (num == 7)
+	    {
+	      thr_weight = sort_weight[count_params * 0.68];
+	    }
+	  else if (num == 8)
+	    {
+	      thr_weight = sort_weight[count_params * 0.73];
+	    }
+	  else if (num == 9)
+	    {
+	      thr_weight = sort_weight[count_params * 0.66];
+	    }
+	  else if (num == 10)
+	    {
+	      thr_weight = sort_weight[count_params * 0.65];
+	    }
+	  else if (num == 11)
+	    {
+	      thr_weight = sort_weight[count_params * 0.71];
+	    }
+	  else if (num == 12)
+	    {
+	      thr_weight = sort_weight[count_params * 0.64];
+	      }
+	  else
+	    {
+	      LOG(FATAL) << " Error: Illegal CONV ratio ";
+	    }
+	  
+	  LOG(INFO) << "blob <CONV>  threshold: " << thr_weight;
+	  	    for (int i = 0; i < count_params; ++i)
+	    {
+	      if ((layers_[layer_id]->blobs()[0]->mutable_cpu_data()[i] > -thr_weight) \
+		  && (layers_[layer_id]->blobs()[0]->mutable_cpu_data()[i] < thr_weight))
+		{
+		  layers_[layer_id]->blobs()[0]->mutable_cpu_data()[i] = 0;
+		  prun_cnt++;
+		}
+	    }
+
+	  LOG(INFO) << ">total num: " << count_params << ", prun count: " << prun_cnt;
+	  num++ ;
+
+	}
+
+
+      LOG(INFO) << "=========== num: " << num ;
+
+      
+   
+
+
+
+
     for (int param_id = 0; param_id < num_params; ++param_id) {
       ostringstream dataset_name;
       dataset_name << param_id;
@@ -1002,6 +1117,7 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
             *params_[net_param_id], true);
       }
     }
+    //=============================================
     H5Gclose(layer_data_hid);
     if (write_diff) {
       H5Gclose(layer_diff_hid);
