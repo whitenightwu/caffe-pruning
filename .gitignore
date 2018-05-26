@@ -32,3 +32,10 @@
 *.jpg
 *~
 .idea
+
+
+*.pkl
+*.caffemodel
+*.h5
+data/VOCdevkit2007/*
+data/VOCdevkitSDS/*

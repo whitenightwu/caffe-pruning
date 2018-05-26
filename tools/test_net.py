@@ -27,7 +27,7 @@ def parse_args():
     """
     parser = argparse.ArgumentParser(description='Test a Fast R-CNN network')
     parser.add_argument('--gpu', dest='gpu_id', help='GPU id to use',
-                        default=0, type=int)
+                        default=1, type=int)
     parser.add_argument('--def', dest='prototxt',
                         help='prototxt file defining the network',
                         default=None, type=str)
