@@ -12,3 +12,14 @@ weight_decay: 0.0005
 snapshot: 0
 snapshot_prefix: "vgg16_mnc_5stage"
 iter_size: 8
+
+
+#prun_conv: true
+#prun_fc: false
+#prun_retrain: false
+#prun_fc_num: 0
+#conv_ratio_0: 0.99
+#conv_ratio_1: 0.99
+#conv_ratio_2, 0.99
+
+

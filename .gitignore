@@ -32,3 +32,9 @@
 *.jpg
 *~
 .idea
+
+
+*.pkl
+data/VOCdevkit2007
+data/xx.ls
+output/mnc_5stage/voc_2012_train/*
