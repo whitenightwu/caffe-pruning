@@ -27,5 +27,3 @@ snapshot_prefix: "examples/mnist/lenet"
 # solver mode: CPU or GPU
 #solver_mode: GPU
 solver_mode: CPU
-#prun_conv: true
-#conv_ratio_0: 0.5
