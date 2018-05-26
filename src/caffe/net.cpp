@@ -1078,7 +1078,8 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
 	    }
 	  
 	  LOG(INFO) << "blob <CONV>  threshold: " << thr_weight;
-	  	    for (int i = 0; i < count_params; ++i)
+
+ 	    for (int i = 0; i < count_params; ++i)
 	    {
 	      if ((layers_[layer_id]->blobs()[0]->mutable_cpu_data()[i] > -thr_weight) \
 		  && (layers_[layer_id]->blobs()[0]->mutable_cpu_data()[i] < thr_weight))
